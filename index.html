@@ -3,59 +3,197 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0d2b26">
-  <title>AR Bandar — PoC</title>
+  <meta name="theme-color" content="#071a32">
+  <title>AR Kajang — Teroka bandar melalui AR</title>
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
   <style>
-    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
-    * { box-sizing: border-box; }
-    body { margin: 0; background: #0d2b26; color: #fff; }
-    .hud { position: fixed; z-index: 5; inset: max(14px, env(safe-area-inset-top)) 14px auto; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
-    .brand, .status { border: 1px solid #ffffff30; background: #09201ddd; border-radius: 14px; padding: 10px 13px; box-shadow: 0 8px 28px #0005; }
-    .brand strong { display:block; font-size: 16px; letter-spacing:.02em; }
-    .brand span, .status { font-size: 12px; color:#d8ebe2; }
-    .status { max-width: 48%; text-align: right; }
-    .card { position: fixed; z-index: 5; inset: auto 14px max(16px, env(safe-area-inset-bottom)); background:#09201ded; border:1px solid #ffffff2e; border-radius:18px; padding:16px 18px; box-shadow:0 8px 28px #0006; }
-    .eyebrow { color:#9fe0b1; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
-    h1 { margin:5px 0 4px; font-size:20px; }
-    .card p { margin:0; color:#d8ebe2; font-size:14px; line-height:1.45; }
-    .hint { margin-top:10px !important; color:#a8c7bb !important; font-size:12px !important; }
-    a-scene { position:fixed; inset:0; }
-    @media (min-width:700px) { .card { width:360px; left:24px; bottom:24px; } .hud { inset:24px 24px auto; } }
+    :root { color-scheme: dark; font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; --navy:#071a32; --blue:#2776ed; --gold:#ffc940; --white:#fff; --muted:#b8c7da; }
+    * { box-sizing:border-box; }
+    html,body { margin:0; width:100%; min-height:100%; background:var(--navy); color:var(--white); }
+    body { min-height:100svh; overflow-x:hidden; }
+    button { border:0; color:inherit; font:inherit; cursor:pointer; }
+    .home { min-height:100svh; padding: max(18px,env(safe-area-inset-top)) 18px calc(92px + env(safe-area-inset-bottom)); background: radial-gradient(ellipse at 82% 8%,#22528a 0,transparent 36%),linear-gradient(158deg,#0b2343 0%,#071a32 54%,#061327 100%); }
+    .topbar { display:flex; align-items:center; justify-content:space-between; max-width:520px; margin:0 auto; }
+    .brand { display:flex; align-items:center; gap:10px; font-weight:850; letter-spacing:.03em; }
+    .brand-mark { width:38px;height:38px;display:grid;place-items:center;border-radius:13px;background:linear-gradient(145deg,#3789ff,#1554c0);box-shadow:0 7px 20px #1264d955;font-size:19px; }
+    .brand small { display:block; font-size:10px; color:#c3d6ed; font-weight:550; letter-spacing:.02em; margin-top:2px; }
+    .lang { border:1px solid #ffffff33;background:#ffffff0d;border-radius:999px;padding:8px 12px;font-size:12px;color:#e2edf9; }
+    .hero { max-width:520px; margin:34px auto 0; position:relative; overflow:hidden; min-height:280px; border:1px solid #ffffff1c; border-radius:28px; padding:26px 22px; background:linear-gradient(140deg,#1c4d80 0%,#123256 45%,#0a1a30 100%); box-shadow:0 24px 60px #0003; }
+    .hero:before { content:"";position:absolute;width:220px;height:220px;border:1px solid #ffffff25;border-radius:50%;right:-54px;top:-50px;box-shadow:0 0 0 22px #ffffff08,0 0 0 48px #ffffff06; }
+    .hero:after { content:"";position:absolute;inset:auto 0 0;height:90px;background:linear-gradient(transparent,#071a32aa);pointer-events:none; }
+    .hero-copy { position:relative;z-index:1;max-width:310px; }
+    .eyebrow { display:inline-flex; align-items:center; gap:7px; border:1px solid #ffffff35; background:#081a32a8; border-radius:999px; padding:7px 10px; color:#dceaff; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; }
+    h1 { font-size:clamp(31px,8vw,42px);line-height:1.06;letter-spacing:-.04em;margin:17px 0 10px; }
+    .hero p { color:#d1deee;line-height:1.5;margin:0;font-size:14px;max-width:285px; }
+    .primary { display:inline-flex;align-items:center;justify-content:center;gap:10px;background:var(--gold);color:#10203a;font-weight:800;border-radius:999px;padding:14px 20px;margin-top:22px;box-shadow:0 9px 24px #ffc94038; }
+    .section { max-width:520px;margin:25px auto 0; }
+    .section-head { display:flex;align-items:end;justify-content:space-between;margin-bottom:12px; }
+    .section h2 { font-size:18px;margin:0;letter-spacing:-.02em; }
+    .section-head span { font-size:12px;color:#9db3cd; }
+    .filters { display:flex;gap:8px;overflow:auto;padding:2px 0 12px;scrollbar-width:none; }
+    .filters::-webkit-scrollbar { display:none; }
+    .chip { flex:0 0 auto;border:1px solid #ffffff22;background:#ffffff0b;color:#d1deee;border-radius:999px;padding:9px 13px;font-size:12px; }
+    .chip.active { color:#fff;border-color:#438cff;background:#1c61c8; }
+    .place { display:flex;gap:14px;align-items:center;padding:13px;border:1px solid #ffffff17;background:#102744;border-radius:20px;box-shadow:0 12px 32px #0002; }
+    .place-art { flex:0 0 72px;height:76px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(145deg,#f1c56f,#8d5930 55%,#273953);font-size:30px; }
+    .place-copy { min-width:0;flex:1; }
+    .place-copy small { color:#91b9ef;font-size:10px;font-weight:750;letter-spacing:.1em;text-transform:uppercase; }
+    .place-copy h3 { font-size:15px;margin:4px 0 3px; }
+    .place-copy p { font-size:12px;line-height:1.35;color:#b9c9dc;margin:0; }
+    .arrow { width:34px;height:34px;border-radius:50%;background:#ffffff12;color:#fff;font-size:20px; }
+    .hint { font-size:11px;line-height:1.45;color:#93a8c2;margin:12px 3px 0; }
+    .nav { position:fixed;z-index:8;bottom:0;left:0;right:0;padding:10px 12px max(10px,env(safe-area-inset-bottom));background:#071629ee;border-top:1px solid #ffffff18;backdrop-filter:blur(18px); }
+    .nav-inner { max-width:520px;margin:auto;display:flex;justify-content:space-around;align-items:center; }
+    .nav-item { display:flex;flex-direction:column;align-items:center;gap:3px;color:#9fb1c7;font-size:10px;min-width:52px;background:transparent;padding:3px; }
+    .nav-item b { font-size:18px;font-weight:500; }
+    .nav-item.selected { color:#70a8ff; }
+    .scan { display:none;position:fixed;z-index:20;inset:0;background:#071a32; }
+    .scan.open { display:block; }
+    .scan a-scene { position:absolute;inset:0;width:100%;height:100%; }
+    .scan-top { position:absolute;z-index:3;inset:max(14px,env(safe-area-inset-top)) 14px auto;display:flex;align-items:center;justify-content:space-between;pointer-events:none; }
+    .scan-top button,.scan-top .scan-state { pointer-events:auto; }
+    .round { width:42px;height:42px;border:1px solid #ffffff33;border-radius:50%;display:grid;place-items:center;background:#06162bbd;color:#fff;font-size:21px;backdrop-filter:blur(10px); }
+    .scan-state { border:1px solid #ffffff2e;border-radius:999px;background:#071a32c9;padding:10px 13px;font-size:12px;color:#e8f1fd;backdrop-filter:blur(10px); }
+    .scan-label { position:absolute;z-index:3;top:22%;left:50%;transform:translateX(-50%);white-space:nowrap;border-radius:999px;padding:9px 13px;background:#071a32c9;border:1px solid #ffffff2e;font-size:11px;color:#fff;letter-spacing:.06em; }
+    .reticle { position:absolute;z-index:2;left:50%;top:48%;width:min(58vw,235px);height:min(58vw,235px);transform:translate(-50%,-50%);pointer-events:none;opacity:.8; }
+    .reticle i { position:absolute;width:26px;height:26px;border-color:white;border-style:solid;filter:drop-shadow(0 2px 6px #0008); }
+    .reticle i:nth-child(1){left:0;top:0;border-width:3px 0 0 3px;border-radius:9px 0 0 0}.reticle i:nth-child(2){right:0;top:0;border-width:3px 3px 0 0;border-radius:0 9px 0 0}.reticle i:nth-child(3){left:0;bottom:0;border-width:0 0 3px 3px;border-radius:0 0 0 9px}.reticle i:nth-child(4){right:0;bottom:0;border-width:0 3px 3px 0;border-radius:0 0 9px 0}
+    .scan-sheet { position:absolute;z-index:4;left:12px;right:12px;bottom:max(14px,env(safe-area-inset-bottom));max-width:520px;margin:auto;border:1px solid #ffffff30;border-radius:22px;background:#f8fafc;color:#0b1d34;padding:15px 16px 14px;box-shadow:0 18px 50px #0006; }
+    .sheet-kicker { display:flex;align-items:center;gap:7px;color:#2367c3;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.08em; }
+    .sheet-title { margin:6px 0 4px;font-size:19px;letter-spacing:-.03em; }
+    .sheet-copy { font-size:12px;line-height:1.45;color:#526176;margin:0; }
+    .sheet-fact { display:none;margin-top:10px;padding:9px 11px;border-radius:13px;background:#fff4d5;color:#4b3a12;font-size:11px;line-height:1.45; }
+    .scan-sheet.expanded .sheet-fact { display:block; }
+    .sheet-actions { display:flex;gap:9px;margin-top:12px; }
+    .sheet-actions button { min-height:42px;border-radius:13px;padding:0 14px;font-size:12px;font-weight:800; }
+    .details-btn { flex:1;background:#e8eef7;color:#16345b; }
+    .scan-btn { flex:1.2;background:var(--blue);color:#fff; }
+    .scan-btn:disabled { opacity:.7; }
+    .permission-note { color:#66778d;font-size:10px;text-align:center;margin:9px 0 0; }
+    @media (min-width:700px) { .home { padding-top:24px; }.hero {margin-top:28px;}.scan-sheet{bottom:22px}.reticle{top:48%} }
   </style>
 </head>
 <body>
-  <div class="hud" aria-hidden="true">
-    <div class="brand"><strong>AR BANDAR</strong><span>Info bandar di hujung kamera</span></div>
-    <div class="status" id="status">Memuatkan AR…</div>
-  </div>
-  <section class="card" aria-live="polite">
-    <div class="eyebrow">Lokasi perintis · Bandar Kajang</div>
-    <h1>Kenali Bandar Kajang</h1>
-    <p>Imbas penanda di lokasi untuk melihat kandungan 3D dan maklumat ringkas tentang tempat ini.</p>
-    <p class="hint">Benarkan akses kamera apabila diminta. Halakan kamera ke penanda contoh yang disediakan dalam README.</p>
+  <main class="home" id="home">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span><span>AR KAJANG<small>Teroka bandar dalam realiti baharu</small></span></div>
+      <button class="lang" aria-label="Tukar bahasa">BM&nbsp; | &nbsp;EN</button>
+    </header>
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="eyebrow">● Cerita tempatan, pengalaman baharu</span>
+        <h1>Kenali Kajang<br>melalui AR.</h1>
+        <p>Imbas mercu tanda dan temui cerita di sebalik tempat yang anda lalui.</p>
+        <button class="primary" id="heroScan">Mula teroka <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+    <section class="section">
+      <div class="section-head"><h2>Teroka mengikut minat</h2><span>1 lokasi perintis</span></div>
+      <div class="filters" aria-label="Kategori"><button class="chip active">Sejarah</button><button class="chip">Warisan</button><button class="chip">Makanan</button><button class="chip">Komuniti</button></div>
+    </section>
+    <section class="section" style="margin-top:8px">
+      <div class="section-head"><h2>Lokasi pilihan</h2><span>Bandar Kajang</span></div>
+      <article class="place">
+        <div class="place-art" aria-hidden="true">🕌</div>
+        <div class="place-copy"><small>Sejarah · Imbas AR</small><h3>Masjid Jamek Pekan Kajang</h3><p>Jejak ringkas sejarah dan seni bina masjid.</p></div>
+        <button class="arrow" id="placeScan" aria-label="Imbas lokasi">›</button>
+      </article>
+      <p class="hint">Demo ini menggunakan kad penanda contoh MindAR. Foto Masjid Jamek perlu dikompilasi sebagai penanda sebelum imbasan bangunan sebenar boleh digunakan.</p>
+    </section>
+  </main>
+  <nav class="nav" aria-label="Navigasi utama"><div class="nav-inner"><button class="nav-item selected"><b>⌂</b>Teroka</button><button class="nav-item"><b>◇</b>Sejarah</button><button class="nav-item"><b>⌖</b>Peta</button><button class="nav-item"><b>♡</b>Simpan</button></div></nav>
+
+  <section class="scan" id="scan" aria-label="Pengimbas AR">
+    <div class="scan-top"><button class="round" id="closeScan" aria-label="Kembali">‹</button><div class="scan-state" id="status">Sedia untuk mengimbas</div><button class="round" id="flipCamera" aria-label="Tukar kamera">⟳</button></div>
+    <div class="scan-label">SEJARAH · MASJID JAMEK KAJANG</div>
+    <div class="reticle" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <a-scene id="arScene" embedded mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: false; uiLoading: no; uiScanning: no; uiError: no" color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+      <a-entity mindar-image-target="targetIndex: 0" id="target">
+        <a-ring position="0 0 0.02" rotation="0 0 0" radius-inner="0.36" radius-outer="0.38" color="#ffc940"></a-ring>
+        <a-plane position="0 0.48 0.02" width="0.92" height="0.36" color="#071a32" material="opacity: 0.9; transparent: true"></a-plane>
+        <a-text value="MASJID JAMEK KAJANG\nDibina 1960-an · Dirasmikan 1971" position="-0.41 0.53 0.04" width="0.83" color="#ffffff" align="left" baseline="center" wrap-count="31"></a-text>
+      </a-entity>
+    </a-scene>
+    <div class="scan-sheet" id="sheet">
+      <div class="sheet-kicker"><span>✦</span> AR SEJARAH · KAJANG</div>
+      <h2 class="sheet-title">Masjid Jamek Pekan Kajang</h2>
+      <p class="sheet-copy">Halakan kamera ke imej penanda untuk melihat kisah tempat ini.</p>
+      <div class="sheet-fact">Masjid ini dibina pada 1960-an dan dirasmikan pada 14 Mei 1971. Rekod rasmi menyebut reka bentuknya mempunyai empat menara kecil serta dua kubah besar.</div>
+      <div class="sheet-actions"><button class="details-btn" id="details">Lihat fakta</button><button class="scan-btn" id="startCamera">Mula imbas</button></div>
+      <p class="permission-note">Kamera hanya bermula selepas anda menekan Mula imbas.</p>
+    </div>
   </section>
-  <a-scene
-    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no"
-    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
-    <a-assets>
-      <a-asset-item id="model" src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb"></a-asset-item>
-    </a-assets>
-    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
-    <a-entity mindar-image-target="targetIndex: 0" id="target">
-      <a-gltf-model src="#model" position="0 0.05 0.1" rotation="0 0 0" scale="0.18 0.18 0.18"></a-gltf-model>
-      <a-ring position="0 0 0.02" rotation="0 0 0" radius-inner="0.39" radius-outer="0.41" color="#72e6a0"></a-ring>
-    </a-entity>
-  </a-scene>
   <script>
-    const status = document.querySelector('#status');
-    const scene = document.querySelector('a-scene');
-    scene.addEventListener('loaded', () => { status.textContent = 'Kamera sedia · Cari penanda'; });
-    scene.addEventListener('arReady', () => { status.textContent = 'Kamera aktif · Halakan ke penanda'; });
-    scene.addEventListener('arError', () => { status.textContent = 'AR tidak dapat dimulakan · Semak HTTPS dan izin kamera'; });
-    document.querySelector('#target').addEventListener('targetFound', () => { status.textContent = 'Penanda dijumpai · Kandungan dipaparkan'; });
-    document.querySelector('#target').addEventListener('targetLost', () => { status.textContent = 'Penanda hilang · Halakan semula kamera'; });
+    const home = document.querySelector('#home');
+    const scan = document.querySelector('#scan');
+    const statusText = document.querySelector('#status');
+    const scene = document.querySelector('#arScene');
+    const sheet = document.querySelector('#sheet');
+    const startButton = document.querySelector('#startCamera');
+    let mindar = scene.systems['mindar-image-system'] || null;
+    const sceneReady = scene.hasLoaded ? Promise.resolve() : new Promise(resolve => scene.addEventListener('loaded', resolve, { once: true }));
+    let cameraStarted = false;
+
+    function openScanner() {
+      scan.classList.add('open');
+      home.setAttribute('aria-hidden', 'true');
+      document.querySelector('.nav').style.display = 'none';
+      statusText.textContent = 'Sedia untuk mengimbas';
+    }
+    async function startCamera() {
+      startButton.disabled = true;
+      startButton.textContent = 'Membuka kamera…';
+      statusText.textContent = 'Meminta izin kamera…';
+      try {
+        await sceneReady;
+        mindar = scene.systems['mindar-image-system'];
+        if (!mindar) throw new Error('MindAR belum bersedia');
+        await mindar.start();
+        cameraStarted = true;
+        statusText.textContent = 'Kamera aktif · Cari penanda';
+        startButton.textContent = 'Kamera aktif';
+      } catch (error) {
+        console.error(error);
+        statusText.textContent = 'Kamera gagal dibuka · Semak izin dan HTTPS';
+        startButton.disabled = false;
+        startButton.textContent = 'Cuba lagi';
+      }
+    }
+    async function closeScanner() {
+      if (cameraStarted) {
+        try { await mindar.stop(); } catch (error) { console.warn(error); }
+        cameraStarted = false;
+      }
+      scan.classList.remove('open');
+      home.removeAttribute('aria-hidden');
+      document.querySelector('.nav').style.display = '';
+      startButton.disabled = false;
+      startButton.textContent = 'Mula imbas';
+    }
+    document.querySelector('#heroScan').addEventListener('click', openScanner);
+    document.querySelector('#placeScan').addEventListener('click', openScanner);
+    document.querySelector('#closeScan').addEventListener('click', closeScanner);
+    startButton.addEventListener('click', startCamera);
+    document.querySelector('#details').addEventListener('click', () => {
+      const expanded = sheet.classList.toggle('expanded');
+      document.querySelector('#details').textContent = expanded ? 'Tutup fakta' : 'Lihat fakta';
+    });
+    document.querySelector('#flipCamera').addEventListener('click', async () => {
+      if (!cameraStarted) { statusText.textContent = 'Kamera hadapan/belakang bergantung pada pelayar'; return; }
+      statusText.textContent = 'Untuk tukar kamera, tutup imbasan dan buka semula';
+    });
+    const target = document.querySelector('#target');
+    target.addEventListener('targetFound', () => {
+      statusText.textContent = 'Penanda dijumpai · Sejarah dipaparkan';
+      document.querySelector('.sheet-copy').textContent = 'Masjid ini dibina pada 1960-an dan dirasmikan pada 14 Mei 1971.';
+    });
+    target.addEventListener('targetLost', () => {
+      statusText.textContent = 'Penanda hilang · Halakan semula kamera';
+      document.querySelector('.sheet-copy').textContent = 'Halakan kamera ke imej penanda untuk melihat kisah tempat ini.';
+    });
+    scene.addEventListener('arError', () => { statusText.textContent = 'AR gagal dimulakan · Semak HTTPS dan izin kamera'; });
   </script>
 </body>
 </html>
