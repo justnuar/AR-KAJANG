@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ms">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d2b26">
+  <title>AR Bandar — PoC</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0d2b26; color: #fff; }
+    .hud { position: fixed; z-index: 5; inset: max(14px, env(safe-area-inset-top)) 14px auto; display: flex; justify-content: space-between; align-items: flex-start; pointer-events: none; }
+    .brand, .status { border: 1px solid #ffffff30; background: #09201ddd; border-radius: 14px; padding: 10px 13px; box-shadow: 0 8px 28px #0005; }
+    .brand strong { display:block; font-size: 16px; letter-spacing:.02em; }
+    .brand span, .status { font-size: 12px; color:#d8ebe2; }
+    .status { max-width: 48%; text-align: right; }
+    .card { position: fixed; z-index: 5; inset: auto 14px max(16px, env(safe-area-inset-bottom)); background:#09201ded; border:1px solid #ffffff2e; border-radius:18px; padding:16px 18px; box-shadow:0 8px 28px #0006; }
+    .eyebrow { color:#9fe0b1; font-size:11px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; }
+    h1 { margin:5px 0 4px; font-size:20px; }
+    .card p { margin:0; color:#d8ebe2; font-size:14px; line-height:1.45; }
+    .hint { margin-top:10px !important; color:#a8c7bb !important; font-size:12px !important; }
+    a-scene { position:fixed; inset:0; }
+    @media (min-width:700px) { .card { width:360px; left:24px; bottom:24px; } .hud { inset:24px 24px auto; } }
+  </style>
+</head>
+<body>
+  <div class="hud" aria-hidden="true">
+    <div class="brand"><strong>AR BANDAR</strong><span>Info bandar di hujung kamera</span></div>
+    <div class="status" id="status">Memuatkan AR…</div>
+  </div>
+  <section class="card" aria-live="polite">
+    <div class="eyebrow">Lokasi perintis · Bandar Kajang</div>
+    <h1>Kenali Bandar Kajang</h1>
+    <p>Imbas penanda di lokasi untuk melihat kandungan 3D dan maklumat ringkas tentang tempat ini.</p>
+    <p class="hint">Benarkan akses kamera apabila diminta. Halakan kamera ke penanda contoh yang disediakan dalam README.</p>
+  </section>
+  <a-scene
+    mindar-image="imageTargetSrc: https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind; autoStart: true; uiLoading: no; uiScanning: no; uiError: no"
+    color-space="sRGB" renderer="colorManagement: true, physicallyCorrectLights" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: false">
+    <a-assets>
+      <a-asset-item id="model" src="https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/main/2.0/Duck/glTF-Binary/Duck.glb"></a-asset-item>
+    </a-assets>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <a-entity mindar-image-target="targetIndex: 0" id="target">
+      <a-gltf-model src="#model" position="0 0.05 0.1" rotation="0 0 0" scale="0.18 0.18 0.18"></a-gltf-model>
+      <a-ring position="0 0 0.02" rotation="0 0 0" radius-inner="0.39" radius-outer="0.41" color="#72e6a0"></a-ring>
+    </a-entity>
+  </a-scene>
+  <script>
+    const status = document.querySelector('#status');
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('loaded', () => { status.textContent = 'Kamera sedia · Cari penanda'; });
+    scene.addEventListener('arReady', () => { status.textContent = 'Kamera aktif · Halakan ke penanda'; });
+    scene.addEventListener('arError', () => { status.textContent = 'AR tidak dapat dimulakan · Semak HTTPS dan izin kamera'; });
+    document.querySelector('#target').addEventListener('targetFound', () => { status.textContent = 'Penanda dijumpai · Kandungan dipaparkan'; });
+    document.querySelector('#target').addEventListener('targetLost', () => { status.textContent = 'Penanda hilang · Halakan semula kamera'; });
+  </script>
+</body>
+</html>
